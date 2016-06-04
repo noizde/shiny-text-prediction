@@ -10,11 +10,23 @@ readNgrams <- function(directory) {
   bigramPath <- paste(directory, "/bigrams.csv", sep = "")
   trigramPath <- paste(directory, "/trigrams.csv", sep = "")
   
+  cknsPath <- paste(directory, "/ckns.csv", sep = "")
+  lambdasPath <- paste(directory, "/lambdas.csv", sep = "")
+  contsPath <- paste(directory, "/conts.csv", sep = "")
+  
   monograms <- read.csv(monogramPath)
   bigrams <- read.csv(bigramPath)
   trigrams <- read.csv(trigramPath)
   
+  c.kns <- read.csv(cknsPath, stringsAsFactors = FALSE, colClasses = c("character", "numeric"))
+  lambdas <- read.csv(lambdasPath, stringsAsFactors = FALSE, colClasses = c("character", "numeric"))
+  conts <- read.csv(contsPath, stringsAsFactors = FALSE, colClasses = c("character", "numeric"))
+  
   ngrams <- list(monograms = monograms, bigrams = bigrams, trigrams = trigrams)
+  
+  ngrams$c.kns <- hash(keys = c.kns[,1], values = c.kns[,2])
+  ngrams$lambdas <- hash(keys = lambdas[,1], values = lambdas[,2])
+  ngrams$conts <- hash(keys = conts[,1], values = conts[,2])
   
   ngrams
 }
@@ -84,47 +96,6 @@ p.cont <- function(word) {
     inHash
   }
 }
-
-train.kn <- function(ngrams) {
-  
-  if (is.null(ngrams$c.kns)) {
-    ngrams$c.kns <- hash()
-  }
-  
-  if (is.null(ngrams$lambdas)) {
-    ngrams$lambdas <- hash()
-  }
-  
-  if (is.null(ngrams$conts)) {
-    ngrams$conts <- hash()
-  }
-  
-  monos <- head(ngrams$monograms$names, 8000)
-  # monos <- ngrams$monograms$names
-  
-  for (word in monos) {
-    word <- as.String(word)
-    c.kn <- ngrams$c.kns[[word]]
-    lambda <- ngrams$lambdas[[word]]
-    cont <- ngrams$conts[[word]]
-    
-    if (is.null(c.kn)) {
-      ngrams$c.kns[[word]] <- count.kn(word)
-    }
-    
-    if (is.null(lambda)) {
-      ngrams$lambdas[[word]] <- computeLambda(word)
-    }
-    
-    if (is.null(cont)) {
-      ngrams$conts[[word]] <- p.cont(word)
-    }
-  }
-  
-  ngrams
-}
-
-ngrams <- train(ngrams)
 
 p.kn <- function(word, context) {
   normalizer <- computeLambda(context)
