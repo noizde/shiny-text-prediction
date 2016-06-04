@@ -1,4 +1,5 @@
 library(shiny)
+library(hash)
 library(tm)
 
 # CONSTANT
